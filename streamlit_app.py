@@ -14,17 +14,13 @@ openai_api_key = st.text_input("OpenAI API Key", type="password")
 if not openai_api_key:
     st.info("계속하려면 OpenAI API 키를 입력해주세요.", icon="🗝️")
 else:
-    # OpenAI 클라이언트 생성
     client = OpenAI(api_key=openai_api_key)
 
-    # 세션 상태 초기화
     if "messages" not in st.session_state:
         st.session_state.messages = []
-
     if "initialized" not in st.session_state:
         st.session_state.initialized = False
 
-    # 초기 계획 입력 폼 (한 번만 입력)
     if not st.session_state.initialized:
         with st.form("salary_plan_form"):
             salary = st.number_input("월급 (만원)", min_value=0)
@@ -33,7 +29,6 @@ else:
             submitted = st.form_submit_button("계획 요청")
 
         if submitted:
-            # 영어 프롬프트 생성
             prompt = (
                 f"My monthly salary is {salary}만원. I want to save {goal_amount}만원 in {years} years. "
                 "Please create a detailed monthly budget plan in Korean. The plan must include the following categories: "
@@ -41,37 +36,30 @@ else:
                 "Make sure the plan is balanced and realistic to help achieve the savings goal. Respond in Korean."
             )
 
-
             st.session_state.messages.append({"role": "user", "content": prompt})
             with st.chat_message("user"):
                 st.markdown(f"월급: {salary}만원 / 목표: {goal_amount}만원 / 기간: {years}년")
 
-            # 응답 생성
             stream = client.chat.completions.create(
                 model="gpt-3.5-turbo",
                 messages=st.session_state.messages,
                 stream=True,
             )
-
             with st.chat_message("assistant"):
                 response = st.write_stream(stream)
             st.session_state.messages.append({"role": "assistant", "content": response})
             st.session_state.initialized = True
-
-    # 초기화 이후에는 대화 지속
+            st.rerun() 
     else:
-        # 이전 대화 출력
         for message in st.session_state.messages:
             with st.chat_message(message["role"]):
                 st.markdown(message["content"])
 
-        # 사용자 입력 받기
         if prompt := st.chat_input("예: 식비를 30만원으로 바꾸고 싶어요"):
             st.session_state.messages.append({"role": "user", "content": prompt})
             with st.chat_message("user"):
                 st.markdown(prompt)
-        
-            # 시스템 메시지 추가 (모든 요청에 항상 포함)
+
             system_message = {
                 "role": "system",
                 "content": (
@@ -79,15 +67,12 @@ else:
                     "adjusting the budget based on the user's requests, and helping them achieve their savings goal."
                 )
             }
-        
-            # GPT에 이전 모든 대화 전달
+
             stream = client.chat.completions.create(
                 model="gpt-3.5-turbo",
                 messages=[system_message] + st.session_state.messages,
                 stream=True,
             )
-        
             with st.chat_message("assistant"):
                 response = st.write_stream(stream)
             st.session_state.messages.append({"role": "assistant", "content": response})
-
