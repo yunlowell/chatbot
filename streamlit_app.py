@@ -5,8 +5,7 @@ from openai import OpenAI
 st.title("💬 yun's 월급 관리 Chatbot")
 st.write(
     "yun's 월급 관리 Chatbot은 OpenAI의 GPT 모델을 활용하여 월급 및 재정 관리를 도와주는 간단한 챗봇입니다."
-    "이 앱을 사용하려면 OpenAI API 키가 필요하며, 여기에서 발급받을 수 있습니다."
-    "이 챗봇을 직접 만들어보고 싶다면, 이 튜토리얼을 참고해보세요."
+    "이 앱을 사용하려면 OpenAI API 키가 필요합니다."
 )
 
 # Ask user for their OpenAI API key via `st.text_input`.
