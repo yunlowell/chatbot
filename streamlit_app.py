@@ -25,6 +25,9 @@ else:
     if "initialized" not in st.session_state:
         st.session_state.initialized = False
 
+    if "system_added" not in st.session_state:
+        st.session_state.system_added = False
+
     # 초기 예산 계획 입력 폼
     if not st.session_state.initialized:
         with st.form("init_plan"):
@@ -42,7 +45,20 @@ else:
                 "Make sure the plan is balanced and realistic to help achieve the savings goal. Respond in Korean."
             )
 
-            # 사용자 입력 저장 및 출력
+            # system 메시지 최초 1회만 추가
+            if not st.session_state.system_added:
+                system_message = {
+                    "role": "system",
+                    "content": (
+                        "You are a financial assistant chatbot helping the user manage their monthly budget. "
+                        "Always include and adjust these categories: 저축, 식비, 주거비, 교통비, 보험, 쇼핑. "
+                        "Continue the conversation in Korean, updating the plan as the user requests."
+                    )
+                }
+                st.session_state.messages.insert(0, system_message)
+                st.session_state.system_added = True
+
+            # 사용자 프롬프트 저장
             st.session_state.messages.append({"role": "user", "content": prompt})
             with st.chat_message("user"):
                 st.markdown(f"월급: {salary}만원 / 목표: {goal_amount}만원 / 기간: {years}년")
@@ -56,6 +72,7 @@ else:
 
             with st.chat_message("assistant"):
                 response = st.write_stream(stream)
+
             st.session_state.messages.append({"role": "assistant", "content": response})
             st.session_state.initialized = True
 
@@ -63,8 +80,9 @@ else:
     else:
         # 이전 대화 출력
         for message in st.session_state.messages:
-            with st.chat_message(message["role"]):
-                st.markdown(message["content"])
+            if message["role"] != "system":
+                with st.chat_message(message["role"]):
+                    st.markdown(message["content"])
 
         # 사용자 입력 받기
         if prompt := st.chat_input("예: 식비를 25만원으로 조정하고 싶어요"):
@@ -72,23 +90,14 @@ else:
             with st.chat_message("user"):
                 st.markdown(prompt)
 
-            # 시스템 메시지: 항목 유지 요청
-            system_message = {
-                "role": "system",
-                "content": (
-                    "You are a financial assistant chatbot helping the user manage their monthly budget. "
-                    "Always include and adjust these categories: 저축, 식비, 주거비, 교통비, 보험, 쇼핑. "
-                    "Continue the conversation in Korean, updating the plan as the user requests."
-                )
-            }
-
-            # GPT 응답 생성
+            # GPT 응답 생성 (system 메시지는 이미 포함되어 있음)
             stream = client.chat.completions.create(
                 model="gpt-4o-mini",
-                messages=[system_message] + st.session_state.messages,
+                messages=st.session_state.messages,
                 stream=True,
             )
 
             with st.chat_message("assistant"):
                 response = st.write_stream(stream)
+
             st.session_state.messages.append({"role": "assistant", "content": response})
