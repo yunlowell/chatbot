@@ -3,6 +3,7 @@ from openai import OpenAI
 
 # 제목 및 설명
 st.title("💬 yun's 월급 관리 Chatbot")
+st.image("chatbot_image.png", use_column_width=True)
 st.write(
     "yun's 월급 관리 Chatbot은 월급과 목표 저축 금액을 기반으로 개인 맞춤형 재정 계획을 제시하고, "
     "지출 항목을 하나씩 수정하면서 함께 조정해 나가는 대화형 챗봇입니다.\n"
