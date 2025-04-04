@@ -63,28 +63,29 @@ else:
             with st.chat_message(message["role"]):
                 st.markdown(message["content"])
 
-        # 사용자 입력 받기
-        if prompt := st.chat_input("예: 식비를 30만원으로 바꾸고 싶어요"):
-            st.session_state.messages.append({"role": "user", "content": prompt})
-            with st.chat_message("user"):
-                st.markdown(prompt)
-
-            # 영어 시스템 메시지 추가 (한글 응답 유지)
-            system_message = {
-                "role": "system",
-                "content": (
-                    "You are a financial assistant chatbot. Continue the conversation in Korean, "
-                    "adjusting the budget based on the user's requests, and helping them achieve their savings goal."
-                )
-            }
-
-            # 챗 응답 생성
-            stream = client.chat.completions.create(
-                model="gpt-4o-mini",
-                messages=[system_message] + st.session_state.messages,
-                stream=True,
+    # 사용자 입력 받기
+    if prompt := st.chat_input("예: 식비를 30만원으로 바꾸고 싶어요"):
+        st.session_state.messages.append({"role": "user", "content": prompt})
+        with st.chat_message("user"):
+            st.markdown(prompt)
+    
+        # 시스템 메시지 추가 (모든 요청에 항상 포함)
+        system_message = {
+            "role": "system",
+            "content": (
+                "You are a financial assistant chatbot. Continue the conversation in Korean, "
+                "adjusting the budget based on the user's requests, and helping them achieve their savings goal."
             )
+        }
+    
+        # GPT에 이전 모든 대화 전달
+        stream = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[system_message] + st.session_state.messages,
+            stream=True,
+        )
+    
+        with st.chat_message("assistant"):
+            response = st.write_stream(stream)
+        st.session_state.messages.append({"role": "assistant", "content": response})
 
-            with st.chat_message("assistant"):
-                response = st.write_stream(stream)
-            st.session_state.messages.append({"role": "assistant", "content": response})
