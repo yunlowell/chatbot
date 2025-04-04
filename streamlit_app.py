@@ -80,7 +80,7 @@ else:
 
             # 챗 응답 생성
             stream = client.chat.completions.create(
-                model="gpt-3.5-turbo",
+                model="gpt-4o-mini",
                 messages=[system_message] + st.session_state.messages,
                 stream=True,
             )
