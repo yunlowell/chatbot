@@ -36,9 +36,11 @@ else:
             # 영어 프롬프트 생성
             prompt = (
                 f"My monthly salary is {salary}만원. I want to save {goal_amount}만원 in {years} years. "
-                "Please create a detailed savings and spending plan in Korean. Include budget allocation by category, "
-                "saving strategy, and any advice to reach the goal. Continue speaking in Korean."
+                "Please create a detailed monthly budget plan in Korean. The plan must include the following categories: "
+                "저축 (savings), 식비 (food), 주거비 (housing), 교통비 (transportation), 보험 (insurance), 쇼핑 (shopping). "
+                "Make sure the plan is balanced and realistic to help achieve the savings goal. Respond in Korean."
             )
+
 
             st.session_state.messages.append({"role": "user", "content": prompt})
             with st.chat_message("user"):
